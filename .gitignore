@@ -8,3 +8,7 @@ tsconfig.tsbuildinfo
 ios/App/Pods/
 android/.gradle/
 android/local.properties
+
+# fieldproof
+fieldproof/node_modules/
+fieldproof/dist/

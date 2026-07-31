@@ -1,0 +1,29 @@
+{
+  "name": "fieldproof",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "On-site claim and inspection reports with a tamper-evident chain of custody.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b --noEmit"
+  },
+  "dependencies": {
+    "@cantoo/pdf-lib": "^2.8.1",
+    "exifr": "^7.1.3",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "~5.9.0",
+    "vite": "^7.0.0",
+    "vitest": "^3.2.0"
+  }
+}

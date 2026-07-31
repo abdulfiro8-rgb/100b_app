@@ -1,0 +1,425 @@
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --text: #10131a;
+  --muted: #626b7d;
+  --line: #e2e6ec;
+  --accent: #1c6dd0;
+  --accent-soft: #e7f0fc;
+  --business: #1c6dd0;
+  --medical: #8b5cf6;
+  --charity: #0f9d76;
+  --personal: #8a93a4;
+  --warn-bg: #fff4e5;
+  --warn-line: #f0c894;
+  --warn-text: #7a4a08;
+  --radius: 14px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1115;
+    --surface: #171a21;
+    --surface-2: #1e222b;
+    --text: #eef1f6;
+    --muted: #98a2b3;
+    --line: #262b35;
+    --accent: #5b9dff;
+    --accent-soft: #16233a;
+    --business: #5b9dff;
+    --medical: #a78bfa;
+    --charity: #34d399;
+    --personal: #7d8697;
+    --warn-bg: #2b2013;
+    --warn-line: #4d3a1c;
+    --warn-text: #f0c894;
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  max-width: 560px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+/* ---------- header ---------- */
+
+.header {
+  padding: 20px 18px 12px;
+  padding-top: max(20px, env(safe-area-inset-top));
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 19px;
+  letter-spacing: -0.01em;
+}
+
+.header p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 14px 12px;
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 5;
+}
+
+.tab {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 9px 6px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.tab[aria-selected="true"] {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+}
+
+/* ---------- content ---------- */
+
+main {
+  flex: 1;
+  padding: 0 14px calc(28px + env(safe-area-inset-bottom));
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.card h2 {
+  margin: 0 0 2px;
+  font-size: 15px;
+}
+
+.card .sub {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.headline {
+  font-size: 34px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  margin: 4px 0 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.headline-note {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 2px 0 0;
+}
+
+/* ---------- rate periods ---------- */
+
+.period {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.period:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.period-range {
+  font-size: 14px;
+}
+
+.period-source {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 1px;
+}
+
+.period-figures {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.period-amount {
+  font-weight: 600;
+}
+
+.period-rate {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* ---------- category rows ---------- */
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+
+.row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.row-label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.dot.business {
+  background: var(--business);
+}
+.dot.medical {
+  background: var(--medical);
+}
+.dot.charity {
+  background: var(--charity);
+}
+.dot.moving {
+  background: var(--medical);
+}
+.dot.personal {
+  background: var(--personal);
+}
+
+/* ---------- trip list ---------- */
+
+.day-heading {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 18px 2px 7px;
+}
+
+.trip {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 13px 14px;
+  margin-bottom: 8px;
+}
+
+.trip-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.trip-route {
+  font-size: 14.5px;
+  font-weight: 550;
+}
+
+.trip-meta {
+  color: var(--muted);
+  font-size: 12.5px;
+  margin-top: 2px;
+}
+
+.trip-figures {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.trip-miles {
+  font-weight: 600;
+}
+
+.trip-deduction {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.trip-deduction.counted {
+  color: var(--charity);
+  font-weight: 550;
+}
+
+.segmented {
+  display: flex;
+  gap: 4px;
+  margin-top: 11px;
+  background: var(--surface-2);
+  padding: 3px;
+  border-radius: 10px;
+}
+
+.segmented button {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12.5px;
+  padding: 7px 4px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.segmented button[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 550;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+}
+
+.purpose-input {
+  width: 100%;
+  margin-top: 9px;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+}
+
+.purpose-input::placeholder {
+  color: var(--muted);
+}
+
+/* ---------- misc ---------- */
+
+.notice {
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-line);
+  color: var(--warn-text);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.notice strong {
+  font-weight: 600;
+}
+
+.button {
+  display: inline-block;
+  width: 100%;
+  text-align: center;
+  border: 0;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 550;
+  padding: 12px;
+  border-radius: 11px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.button.secondary {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+}
+
+.button + .button {
+  margin-top: 8px;
+}
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 48px 20px;
+  font-size: 14px;
+}
+
+.year-picker {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.year-picker button {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 13px;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.year-picker button[aria-pressed="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 550;
+}
+
+code.inline {
+  background: var(--surface-2);
+  padding: 1px 5px;
+  border-radius: 5px;
+  font-size: 12.5px;
+}

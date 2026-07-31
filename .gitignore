@@ -1,0 +1,10 @@
+node_modules/
+dist/
+*.local
+.DS_Store
+tsconfig.tsbuildinfo
+
+# Capacitor native projects (generated; regenerate with `npx cap add`)
+ios/App/Pods/
+android/.gradle/
+android/local.properties

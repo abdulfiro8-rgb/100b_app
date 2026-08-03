@@ -158,6 +158,40 @@ describe("storage must not launder tampering", () => {
   });
 });
 
+describe("captions", () => {
+  it("persists a caption written after the fact without disturbing the chain", async () => {
+    // Captions sit outside the hash chain by design: writing one up an hour
+    // after leaving the property is ordinary work, not tampering.
+    const session = await captureAndPersist();
+    const target = session.evidence[2]!;
+
+    await saveAnnotation({ evidenceId: target.id, caption: "Ridge, close up" });
+
+    const stored = await loadInspection(job.id);
+    const restored = InspectionSession.hydrate(stored!.job, deps(), stored!);
+    const report = await restored.verify();
+
+    expect(stored!.annotations.find((a) => a.evidenceId === target.id)?.caption).toBe(
+      "Ridge, close up",
+    );
+    expect(report.integrity).toBe("intact");
+  });
+
+  it("replaces a caption rather than accumulating duplicates", async () => {
+    const session = await captureAndPersist();
+    const id = session.evidence[0]!.id;
+
+    await saveAnnotation({ evidenceId: id, caption: "First" });
+    await saveAnnotation({ evidenceId: id, caption: "Corrected" });
+
+    const stored = await loadInspection(job.id);
+    const forPhoto = stored!.annotations.filter((a) => a.evidenceId === id);
+
+    expect(forPhoto).toHaveLength(1);
+    expect(forPhoto[0]!.caption).toBe("Corrected");
+  });
+});
+
 describe("jobs", () => {
   it("lists saved jobs newest first", async () => {
     await saveJob(makeJob({ id: "a", inspectedAt: 1000 }));

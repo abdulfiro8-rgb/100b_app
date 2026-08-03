@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@cantoo/pdf-lib": "^2.8.1",
+    "@capacitor-community/speech-recognition": "^7.0.1",
     "@capacitor/camera": "^8.2.2",
     "@capacitor/core": "^8.5.0",
     "@capacitor/geolocation": "^8.2.0",
@@ -23,7 +24,9 @@
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.5.0",
     "@capacitor/cli": "^8.5.0",
+    "@capacitor/ios": "^8.5.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.0.0",

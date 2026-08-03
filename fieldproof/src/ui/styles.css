@@ -431,3 +431,44 @@ label.button {
   cursor: pointer;
   text-align: center;
 }
+
+/* ---------- photo detail ---------- */
+
+.detail {
+  margin-top: 11px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface-2);
+}
+
+.detail-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.detail-time {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.detail-meta {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.detail-hash {
+  margin-top: 7px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10.5px;
+  color: var(--muted);
+  word-break: break-all;
+}
+
+.button.listening {
+  background: var(--alert);
+}

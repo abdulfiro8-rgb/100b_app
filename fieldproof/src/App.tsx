@@ -3,6 +3,8 @@ import { useApp } from "./store/useApp.js";
 import { IntegrityBadge } from "./ui/IntegrityBadge.js";
 import { EvidenceGrid } from "./ui/EvidenceGrid.js";
 import { FindingsPanel } from "./ui/FindingsPanel.js";
+import { DictatePanel } from "./ui/DictatePanel.js";
+import { PhotoDetail } from "./ui/PhotoDetail.js";
 import { JobList } from "./ui/JobList.js";
 import { VerifyScreen } from "./ui/VerifyScreen.js";
 
@@ -12,9 +14,9 @@ export function App() {
   const app = useApp();
   const [tab, setTab] = useState<Tab>("jobs");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [notes, setNotes] = useState("");
 
   const sequenceOf = (id: string) => app.evidence.find((e) => e.id === id)?.sequence;
+  const selected = selectedId ? app.evidence.find((e) => e.id === selectedId) : undefined;
 
   if (app.loading) {
     return (
@@ -98,6 +100,18 @@ export function App() {
               tzOffsetMinutes={app.activeJob.tzOffsetMinutes}
             />
 
+            {selected && (
+              <PhotoDetail
+                record={selected}
+                caption={app.captions.get(selected.id) ?? ""}
+                issues={(app.integrity?.provenanceIssues ?? []).filter(
+                  (i) => i.evidenceId === selected.id,
+                )}
+                onCaption={(caption) => void app.setCaption(selected.id, caption)}
+                tzOffsetMinutes={app.activeJob.tzOffsetMinutes}
+              />
+            )}
+
             <div className="actions" style={{ marginTop: 12 }}>
               <button
                 type="button"
@@ -122,31 +136,10 @@ export function App() {
             </p>
           </section>
 
-          <section className="card">
-            <h2>Dictate findings</h2>
-            <p className="sub">
-              Say the area once, then keep talking. Parsed on device — no network, no API key.
-            </p>
-            <textarea
-              value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-              placeholder="Roof. Lifted shingles along the ridge, moderate. Also cracked flashing at the chimney."
-            />
-            <button
-              type="button"
-              className="button"
-              disabled={!notes.trim()}
-              onClick={async () => {
-                await app.dictate(notes);
-                setNotes("");
-              }}
-            >
-              Add findings
-            </button>
-          </section>
+          <DictatePanel controller={app.dictation} onFindings={app.dictate} />
 
           <section className="card">
-            <h2>Findings</h2>
+            <h2>Recorded findings</h2>
             <p className="sub">
               {selectedId
                 ? `Photo ${(sequenceOf(selectedId) ?? 0) + 1} selected — attach it below.`

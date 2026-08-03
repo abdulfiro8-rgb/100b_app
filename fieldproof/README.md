@@ -133,21 +133,70 @@ The adversarial cases are the point:
 - The PDF is byte-identical when regenerated, so the report's own hash means
   something.
 
+## Dictation
+
+Speak instead of typing: the recogniser's settled text runs through the same
+rules engine, so speech becomes draft findings through code that was already
+tested.
+
+**Only final results become text.** Recognisers revise their interim guesses
+freely — "severe" can become "several" a word later — so partials are shown live
+and never committed. The transcript stays editable before findings are created,
+because recognisers mishear trade vocabulary constantly and an adjuster who
+cannot fix "shingers" will stop using dictation.
+
+**Where audio goes, stated plainly.** `DictationSource.isOnDevice` is part of the
+interface, and the UI reads it at the microphone. Today it is `false` on every
+platform: Chrome streams audio to Google's speech service, and while iOS and
+Android *can* recognise locally, the Capacitor plugin exposes neither
+`requiresOnDeviceRecognition` nor Android's offline preference — so the request
+goes out with the platform default, which is server-side.
+
+Claiming local recognition here would be a guess dressed as a guarantee, on
+exactly the promise this product is sold on. Making it true needs a small custom
+plugin that sets those flags and reports which mode it got. Until then the app
+says audio may be processed off-device, and anyone handling a sensitive claim can
+type instead. Note the structurer *is* local — that copy is about the recogniser
+only, and the two must not be conflated.
+
 ## Status and limitations
 
 Built: the evidence chain, provenance and EXIF checks, verification, findings,
-deterministic PDF, IndexedDB persistence, the portable `.fpx` package with a
-standalone verifier, real Capacitor camera and GPS, and multiple inspections.
+captions, dictation, deterministic PDF, IndexedDB persistence, the portable
+`.fpx` package with a standalone verifier, real Capacitor camera and GPS,
+multiple inspections, and native iOS/Android project scaffolds with permissions.
 
-Not built: live transcription or any LLM call, RFC 3161 trusted timestamping,
-device attestation, Xactimate (ESX) interchange, sync between devices, billing,
-and store submission. **The iOS project cannot be compiled or verified from the
-Linux container this was developed in** — the Capacitor config and permission
-strings are written, the build is unproven.
+**Cannot be built or verified here:**
+- **iOS compilation** — needs macOS and Xcode; this was developed on Linux. The
+  project and permission strings exist; the build is unproven.
+- **The Android APK** — no Android SDK in the build container. `npx cap open
+  android` or `cd android && ./gradlew assembleDebug` on a machine with one.
+- **Real speech accuracy** — a headless browser has no microphone. The plumbing,
+  partial-versus-final handling, error paths and platform labelling are tested;
+  actual transcription quality is not.
+
+**Deliberately excluded, not merely unfinished:**
+- **RFC 3161 trusted timestamping.** It needs DER/ASN.1 encoding and CMS parsing
+  against an external authority. A half-correct cryptographic timestamp on a
+  product whose whole value is evidentiary rigor is worse than none — it invites
+  reliance it cannot support. Properly or not at all.
+- **Device attestation** — unverifiable from here, and unverifiable security code
+  is not a feature.
+- **Sync between devices** — needs a backend, contradicting the on-device
+  architecture and the privacy position.
+- Billing, store submission, Xactimate (ESX) interchange.
 
 Location is needed only *while in use*: nothing is tracked in the background, so
 there is no `ACCESS_BACKGROUND_LOCATION` declaration and no Play Console
 justification video — a markedly easier review than a mileage tracker faces.
+
+## Native builds
+
+```bash
+npm run build && npx cap sync
+cd android && ./gradlew assembleDebug   # needs the Android SDK
+npx cap open ios                        # needs macOS + Xcode
+```
 
 The AI seam ships a rules-based structurer that parses dictated notes on device.
 It handles the common dictation shape — name the area once, then keep talking —

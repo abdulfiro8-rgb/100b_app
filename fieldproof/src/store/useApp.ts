@@ -4,12 +4,31 @@ import { InspectionSession } from "../core/session.js";
 import { MockCamera, MockLocation } from "../capture/mock.js";
 import { systemClock, type CaptureDeps } from "../capture/types.js";
 import { RulesStructurer } from "../ai/rules.js";
+import { DictationController } from "../ai/dictation.js";
+import { WebSpeechDictation } from "../ai/webspeech.js";
+import { NativeSpeechDictation } from "../ai/nativespeech.js";
 import { packageFileName, writePackage } from "../core/package.js";
 import * as db from "./db.js";
 import type { IntegrityReport } from "../core/verify.js";
 import type { Job, Peril } from "../core/types.js";
 
 const structurer = new RulesStructurer();
+
+/**
+ * Picks a recogniser for the platform.
+ *
+ * Both report `isOnDevice: false` today — the browser's service is remote, and
+ * the Capacitor plugin exposes no way to demand iOS's on-device mode. The UI
+ * reads that flag and tells the user, rather than implying a locality the code
+ * cannot deliver.
+ */
+function makeDictation(): DictationController | null {
+  if (Capacitor.isNativePlatform()) {
+    return new DictationController(new NativeSpeechDictation(), structurer);
+  }
+  const web = new WebSpeechDictation();
+  return web.isAvailable() ? new DictationController(web, structurer) : null;
+}
 
 /**
  * Chooses real capture on a device and fixtures in a browser.
@@ -53,7 +72,13 @@ export function useApp() {
   const [loading, setLoading] = useState(true);
 
   const sessionRef = useRef<InspectionSession | null>(null);
+  const dictationRef = useRef<DictationController | null | undefined>(undefined);
   const bump = useCallback(() => setVersion((v) => v + 1), []);
+
+  // Built once: constructing a recogniser per render would drop listeners
+  // mid-sentence.
+  if (dictationRef.current === undefined) dictationRef.current = makeDictation();
+  const dictation = dictationRef.current;
 
   useEffect(() => {
     void db.listJobs().then((stored) => {
@@ -147,6 +172,17 @@ export function useApp() {
     [bump],
   );
 
+  const setCaption = useCallback(
+    async (evidenceId: string, caption: string) => {
+      const session = sessionRef.current;
+      if (!session) return;
+      session.setCaption(evidenceId, caption);
+      await db.saveAnnotation({ evidenceId, caption });
+      bump();
+    },
+    [bump],
+  );
+
   const dictate = useCallback(
     async (text: string) => {
       const session = sessionRef.current;
@@ -215,6 +251,9 @@ export function useApp() {
 
   return {
     loading,
+    captions: new Map((session?.notes ?? []).map((n) => [n.evidenceId, n.caption ?? ""])),
+    setCaption,
+    dictation,
     jobs,
     activeJob: session?.job ?? null,
     activeJobId,

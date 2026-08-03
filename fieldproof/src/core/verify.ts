@@ -1,5 +1,6 @@
 import { sha256Hex, verifyChain, type ChainIssue } from "./chain.js";
 import { checkProvenance, type ProvenanceIssue, type ProvenanceOptions } from "./provenance.js";
+import { compareExif, readExif, type ExifFacts } from "./exif.js";
 import type { EvidenceAnnotation, EvidenceRecord, Finding, Job } from "./types.js";
 
 export interface EvidencePackage {
@@ -65,11 +66,21 @@ export const INTEGRITY_STATEMENT = {
  * @param images Evidence id to image bytes. Records with no entry are reported
  *   as unverifiable rather than assumed good — silence is not a pass.
  */
+export interface VerifyOptions {
+  provenance?: Partial<ProvenanceOptions>;
+  /**
+   * Reads embedded metadata from image bytes. Injectable so tests can supply
+   * known EXIF without hand-crafting JPEG headers.
+   */
+  exifReader?: (bytes: Uint8Array) => Promise<ExifFacts | undefined>;
+}
+
 export async function verifyPackage(
   pkg: EvidencePackage,
   images: ReadonlyMap<string, Uint8Array>,
-  provenanceOptions: Partial<ProvenanceOptions> = {},
+  options: VerifyOptions = {},
 ): Promise<IntegrityReport> {
+  const { provenance: provenanceOptions = {}, exifReader = readExif } = options;
   const chainIssues = await verifyChain(pkg.records, pkg.job.id);
   const contentIssues: ContentIssue[] = [];
   let contentVerified = 0;
@@ -108,6 +119,24 @@ export async function verifyPackage(
   }
 
   const provenanceIssues = checkProvenance(pkg.records, pkg.job, provenanceOptions);
+
+  // Cross-check embedded metadata against the capture record. Only runs where
+  // the bytes are present and the file actually carries EXIF, which many do
+  // not — absence is not a finding.
+  for (const record of pkg.records) {
+    const bytes = images.get(record.id);
+    if (!bytes) continue;
+
+    const comparison = compareExif(record, await exifReader(bytes));
+    if (comparison) {
+      provenanceIssues.push({
+        code: "exif-mismatch",
+        level: "warning",
+        evidenceId: record.id,
+        detail: comparison.detail,
+      });
+    }
+  }
 
   // A missing file is not proof of tampering — it is an incomplete package. Only
   // a positive mismatch breaks integrity.

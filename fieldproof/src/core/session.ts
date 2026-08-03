@@ -24,6 +24,33 @@ export class InspectionSession {
     private readonly deps: CaptureDeps,
   ) {}
 
+  /**
+   * Restores a session from storage.
+   *
+   * Records are adopted exactly as supplied. Hashes are deliberately **not**
+   * recomputed: if storage corrupted, dropped or reordered a record, that must
+   * surface as a verification failure. Recalculating on load would repair the
+   * evidence of damage and return a package that looks pristine — the one
+   * outcome this product cannot afford.
+   */
+  static hydrate(
+    job: Job,
+    deps: CaptureDeps,
+    stored: {
+      records: readonly EvidenceRecord[];
+      images: ReadonlyMap<string, Uint8Array>;
+      annotations: readonly EvidenceAnnotation[];
+      findings: readonly Finding[];
+    },
+  ): InspectionSession {
+    const session = new InspectionSession(job, deps);
+    session.records = [...stored.records];
+    session.annotations = [...stored.annotations];
+    session.findings = [...stored.findings];
+    for (const [id, bytes] of stored.images) session.images.set(id, bytes);
+    return session;
+  }
+
   get evidence(): readonly EvidenceRecord[] {
     return this.records;
   }

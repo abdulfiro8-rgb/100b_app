@@ -110,6 +110,8 @@ function shortLabel(code: ProvenanceIssue["code"]): string {
       return "source?";
     case "outside-inspection-window":
       return "off date";
+    case "exif-mismatch":
+      return "metadata";
   }
 }
 

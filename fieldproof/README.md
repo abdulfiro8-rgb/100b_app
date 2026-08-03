@@ -44,14 +44,32 @@ establish the app itself was genuine.
 ```bash
 npm install
 npm run dev        # http://localhost:5173 — mock camera, no device needed
-npm test           # 47 tests
+npm test           # 82 tests
 npm run typecheck
 npm run build
 ```
 
-The dev build runs against a mock camera and clock, so the whole flow — capture,
-chain, verify, generate the PDF — works in a desktop browser with no phone, no
-permissions and no GPS.
+On a device the app uses the real camera and GPS through Capacitor; in a browser
+it swaps in fixtures behind the same interface, so the whole flow — capture,
+chain, persist, export, verify, generate the PDF — works on a desktop with no
+phone, no permissions and no GPS. The clock is real either way.
+
+## Handing evidence over
+
+A report nobody can check is just a PDF. Export produces a `.fpx` package: an
+ordinary zip holding `manifest.json`, the photographs, and a README explaining
+how to check them.
+
+An examiner needs neither this app nor our word for it:
+
+```bash
+unzip CLM-2026-7781.fpx -d claim
+cd claim
+sha256sum evidence/*.png          # compare against contentHash in manifest.json
+```
+
+The app's own **Verify a package** screen runs the same check on a file that
+arrived from anyone, on a device that has never seen the inspection.
 
 ## Architecture
 
@@ -62,11 +80,17 @@ is pure and testable anywhere.
 src/core/       pure and deterministic
   chain.ts      hash chain over immutable capture facts
   provenance.ts location, clock and source checks
+  exif.ts       cross-checks embedded metadata against the capture record
   verify.ts     re-hashes files, produces the integrity report
+  package.ts    the .fpx portable evidence package
   report.ts     derives the report's structure
   pdf.ts        renders it, deterministically
   session.ts    one inspection in progress
-src/capture/    the seam to the phone — CameraSource, LocationSource, Clock
+src/capture/    the seam to the phone
+  types.ts      CameraSource, LocationSource, Clock
+  capacitor.ts  real camera and GPS on a device
+  mock.ts       fixtures for the browser and tests
+src/store/      IndexedDB persistence
 src/ai/         the seam to speech and language models
   rules.ts      rules-based structurer: no API key, no network, no inference cost
 src/ui/         React, mobile-first
@@ -111,10 +135,19 @@ The adversarial cases are the point:
 
 ## Status and limitations
 
-Slice 1 is complete: evidence chain, provenance, verification, findings, PDF and
-the web app. Not yet built: live transcription or any LLM call, trusted
-timestamping, device attestation, Xactimate (ESX) interchange, sync, billing, and
-the native iOS/Android builds.
+Built: the evidence chain, provenance and EXIF checks, verification, findings,
+deterministic PDF, IndexedDB persistence, the portable `.fpx` package with a
+standalone verifier, real Capacitor camera and GPS, and multiple inspections.
+
+Not built: live transcription or any LLM call, RFC 3161 trusted timestamping,
+device attestation, Xactimate (ESX) interchange, sync between devices, billing,
+and store submission. **The iOS project cannot be compiled or verified from the
+Linux container this was developed in** — the Capacitor config and permission
+strings are written, the build is unproven.
+
+Location is needed only *while in use*: nothing is tracked in the background, so
+there is no `ACCESS_BACKGROUND_LOCATION` declaration and no Play Console
+justification video — a markedly easier review than a mileage tracker faces.
 
 The AI seam ships a rules-based structurer that parses dictated notes on device.
 It handles the common dictation shape — name the area once, then keep talking —

@@ -22,7 +22,8 @@ export type ProvenanceCode =
   | "clock-inconsistent"
   | "library-import"
   | "unknown-source"
-  | "outside-inspection-window";
+  | "outside-inspection-window"
+  | "exif-mismatch";
 
 export type IssueLevel = "info" | "warning" | "critical";
 

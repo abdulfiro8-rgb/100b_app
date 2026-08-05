@@ -43,10 +43,6 @@ export class DictationController {
     return this.source.isOnDevice;
   }
 
-  get sourceName(): string {
-    return this.source.name;
-  }
-
   isAvailable(): boolean {
     return this.source.isAvailable();
   }

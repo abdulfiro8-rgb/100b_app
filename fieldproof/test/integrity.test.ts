@@ -177,6 +177,7 @@ describe("annotations stay outside the chain", () => {
           area: "Roof — north slope",
           description: "Wind-lifted shingles along the ridge",
           severity: "moderate",
+          severityStated: true,
           evidenceIds: ["ev-1"],
         },
       ],

@@ -10,7 +10,7 @@ import { NativeSpeechDictation } from "../ai/nativespeech.js";
 import { packageFileName, writePackage } from "../core/package.js";
 import * as db from "./db.js";
 import type { IntegrityReport } from "../core/verify.js";
-import type { Job, Peril } from "../core/types.js";
+import type { Job, Peril, Severity } from "../core/types.js";
 
 const structurer = new RulesStructurer();
 
@@ -22,9 +22,12 @@ const structurer = new RulesStructurer();
  * reads that flag and tells the user, rather than implying a locality the code
  * cannot deliver.
  */
-function makeDictation(): DictationController | null {
+async function makeDictation(): Promise<DictationController | null> {
   if (Capacitor.isNativePlatform()) {
-    return new DictationController(new NativeSpeechDictation(), structurer);
+    const native = new NativeSpeechDictation();
+    // Probed before offering it: a device with no recogniser must not be shown
+    // a Dictate button that fails when pressed.
+    return (await native.probe()) ? new DictationController(native, structurer) : null;
   }
   const web = new WebSpeechDictation();
   return web.isAvailable() ? new DictationController(web, structurer) : null;
@@ -72,13 +75,20 @@ export function useApp() {
   const [loading, setLoading] = useState(true);
 
   const sessionRef = useRef<InspectionSession | null>(null);
-  const dictationRef = useRef<DictationController | null | undefined>(undefined);
+  const [dictation, setDictation] = useState<DictationController | null>(null);
   const bump = useCallback(() => setVersion((v) => v + 1), []);
 
-  // Built once: constructing a recogniser per render would drop listeners
-  // mid-sentence.
-  if (dictationRef.current === undefined) dictationRef.current = makeDictation();
-  const dictation = dictationRef.current;
+  // Built once, after probing the platform. Constructing a recogniser per
+  // render would drop listeners mid-sentence.
+  useEffect(() => {
+    let cancelled = false;
+    void makeDictation().then((controller) => {
+      if (!cancelled) setDictation(controller);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     void db.listJobs().then((stored) => {
@@ -101,6 +111,14 @@ export function useApp() {
       const stored = await db.loadInspection(activeJobId);
       if (!stored || cancelled) return;
       const deps = await makeDeps(stored.job.propertyLocation);
+
+      // Ask for camera and location up front, rather than interrupting someone
+      // halfway up a ladder with a permission dialog.
+      if (Capacitor.isNativePlatform()) {
+        const { requestCapturePermissions } = await import("../capture/capacitor.js");
+        await requestCapturePermissions();
+      }
+
       sessionRef.current = InspectionSession.hydrate(stored.job, deps, stored);
       bump();
     })();
@@ -194,6 +212,9 @@ export function useApp() {
           area: draft.area,
           description: draft.description,
           severity: draft.severity,
+          // Carried through, not dropped: this is what keeps an ungraded
+          // observation visibly ungraded instead of silently filed as minor.
+          severityStated: draft.severityStated,
           evidenceIds: [],
         });
       }
@@ -213,6 +234,23 @@ export function useApp() {
       if (finding?.evidenceIds.includes(evidenceId)) session.detach(evidenceId, findingId);
       else session.attach(evidenceId, findingId);
 
+      await db.saveFindings(session.job.id, session.observations);
+      bump();
+    },
+    [bump],
+  );
+
+  const updateFinding = useCallback(
+    async (id: string, patch: { description?: string; severity?: Severity }) => {
+      const session = sessionRef.current;
+      if (!session) return;
+
+      // Choosing a severity by hand is the confirmation, so the flag is set
+      // here rather than asking the UI to remember to.
+      session.updateFinding(id, {
+        ...patch,
+        ...(patch.severity !== undefined ? { severityStated: true } : {}),
+      });
       await db.saveFindings(session.job.id, session.observations);
       bump();
     },
@@ -268,6 +306,7 @@ export function useApp() {
     addPhoto,
     dictate,
     attach,
+    updateFinding,
     removeFinding,
     downloadReport,
     exportPackage,

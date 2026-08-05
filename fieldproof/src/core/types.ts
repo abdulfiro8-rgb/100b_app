@@ -82,6 +82,19 @@ export interface Finding {
   area: string;
   description: string;
   severity: Severity;
+  /**
+   * Whether a person actually graded this.
+   *
+   * Dictation often describes damage without grading it. Rather than invent a
+   * severity, the structurer falls back to the least claim-inflating value and
+   * records that nobody said it — and the app keeps showing the finding as
+   * unconfirmed until someone chooses. A severity sitting on a claim that no
+   * human set, presented as though they had, is the failure this guards
+   * against.
+   *
+   * `true` once set by hand, or when the dictation stated it outright.
+   */
+  severityStated: boolean;
   /** Evidence supporting this finding. */
   evidenceIds: string[];
 }

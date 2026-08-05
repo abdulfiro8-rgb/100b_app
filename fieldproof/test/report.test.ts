@@ -26,6 +26,7 @@ async function inspectionPackage(): Promise<{
           area: "Roof — north slope",
           description: "Wind-lifted shingles along the ridge line",
           severity: "moderate",
+          severityStated: true,
           evidenceIds: ["ev-0", "ev-1"],
         },
         {
@@ -33,6 +34,7 @@ async function inspectionPackage(): Promise<{
           area: "Exterior",
           description: "Gutter detached at the north-east corner",
           severity: "minor",
+          severityStated: true,
           evidenceIds: [],
         },
       ],
@@ -69,6 +71,7 @@ describe("report model", () => {
       area: "Interior",
       description: "Ceiling stain",
       severity: "minor",
+      severityStated: true,
       evidenceIds: ["ev-does-not-exist"],
     });
 

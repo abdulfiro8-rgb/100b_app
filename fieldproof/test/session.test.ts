@@ -83,6 +83,7 @@ describe("findings and annotations", () => {
       area: "Roof",
       description: "Lifted shingles",
       severity: "moderate",
+      severityStated: true,
       evidenceIds: [],
     });
     session.attach(first.id, finding.id);
@@ -101,6 +102,7 @@ describe("findings and annotations", () => {
       area: "Roof",
       description: "Lifted shingles",
       severity: "moderate",
+      severityStated: true,
       evidenceIds: [],
     });
 
@@ -120,6 +122,7 @@ describe("findings and annotations", () => {
       area: "Kitchen",
       description: "Ceiling staining",
       severity: "minor",
+      severityStated: true,
       evidenceIds: [],
     });
     session.attach(photo.id, finding.id);

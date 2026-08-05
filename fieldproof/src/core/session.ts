@@ -46,7 +46,13 @@ export class InspectionSession {
     const session = new InspectionSession(job, deps);
     session.records = [...stored.records];
     session.annotations = [...stored.annotations];
-    session.findings = [...stored.findings];
+    // Findings written before severity confirmation existed are treated as
+    // confirmed. Defaulting the other way would retroactively accuse every
+    // historic finding of being ungraded.
+    session.findings = stored.findings.map((f) => ({
+      ...f,
+      severityStated: f.severityStated ?? true,
+    }));
     for (const [id, bytes] of stored.images) session.images.set(id, bytes);
     return session;
   }

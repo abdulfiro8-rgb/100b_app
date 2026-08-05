@@ -44,6 +44,7 @@ async function captureAndPersist(photos = 3) {
     area: "Roof",
     description: "Lifted shingles",
     severity: "moderate",
+    severityStated: true,
     evidenceIds: [session.evidence[0]!.id],
   });
   await saveFindings(job.id, [finding]);

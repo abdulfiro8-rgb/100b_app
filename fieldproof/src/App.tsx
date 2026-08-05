@@ -150,6 +150,7 @@ export function App() {
               selectedEvidenceId={selectedId}
               sequenceOf={sequenceOf}
               onAttach={app.attach}
+              onUpdate={app.updateFinding}
               onRemove={app.removeFinding}
             />
           </section>

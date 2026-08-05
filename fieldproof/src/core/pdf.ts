@@ -166,6 +166,13 @@ function drawCover(cursor: Cursor, model: ReportModel): void {
     { size: 10, bold: true, colour: intact ? GOOD : ALERT, gap: 6 },
   );
 
+  if (model.unconfirmedSeverities > 0) {
+    cursor.text(
+      `${model.unconfirmedSeverities} finding(s) have a severity nobody confirmed; they are shown as provisional.`,
+      { size: 9, colour: ALERT },
+    );
+  }
+
   if (model.integrity.provenanceIssues.length > 0) {
     cursor.text(
       `${model.integrity.provenanceIssues.length} provenance note(s) recorded — see the appendix.`,
@@ -193,8 +200,12 @@ function drawFindings(
     cursor.text(area.area, { size: 12, bold: true, gap: 6 });
 
     for (const finding of area.findings) {
-      cursor.text(`${SEVERITY_LABELS[finding.severity]} — ${finding.description}`, {
+      const grade = finding.severityStated
+        ? SEVERITY_LABELS[finding.severity]
+        : `${SEVERITY_LABELS[finding.severity]} (unconfirmed)`;
+      cursor.text(`${grade} — ${finding.description}`, {
         size: 10,
+        colour: finding.severityStated ? INK : ALERT,
         gap: 4,
       });
 

@@ -24,6 +24,7 @@ async function exported() {
         area: "Roof",
         description: "Lifted shingles",
         severity: "moderate",
+        severityStated: true,
         evidenceIds: ["ev-0"],
       },
     ],

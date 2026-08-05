@@ -25,6 +25,8 @@ export interface ReportFinding {
   id: string;
   description: string;
   severity: Severity;
+  /** False when no person ever graded this. Shown, not hidden. */
+  severityStated: boolean;
   photos: ReportPhoto[];
 }
 
@@ -48,6 +50,14 @@ export interface ReportModel {
   unattached: ReportPhoto[];
   integrity: IntegrityReport;
   photoCount: number;
+  /**
+   * Findings whose severity nobody confirmed.
+   *
+   * Printed on the cover so a report cannot present a graded claim as though a
+   * person graded it. A silent fallback severity on a document that goes to a
+   * carrier is exactly the quiet inaccuracy this app exists to avoid.
+   */
+  unconfirmedSeverities: number;
 }
 
 const PERIL_LABELS: Record<string, string> = {
@@ -112,6 +122,7 @@ export function buildReport(pkg: EvidencePackage, integrity: IntegrityReport): R
       id: finding.id,
       description: finding.description,
       severity: finding.severity,
+      severityStated: finding.severityStated,
       photos,
     });
     areaMap.set(finding.area, area);
@@ -136,6 +147,7 @@ export function buildReport(pkg: EvidencePackage, integrity: IntegrityReport): R
     unattached,
     integrity,
     photoCount: records.length,
+    unconfirmedSeverities: findings.filter((f) => !f.severityStated).length,
   };
 }
 

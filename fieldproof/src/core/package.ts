@@ -179,7 +179,13 @@ export function readPackage(bytes: Uint8Array): ReadPackageResult {
       job: manifest.job,
       records: manifest.records,
       annotations: manifest.annotations ?? [],
-      findings: manifest.findings ?? [],
+      // Packages written before severity confirmation existed carry no flag;
+      // those findings were graded under the old rules, so they open confirmed
+      // rather than being flagged after the fact.
+      findings: (manifest.findings ?? []).map((f) => ({
+        ...f,
+        severityStated: f.severityStated ?? true,
+      })),
     },
     images,
     exportedAt: manifest.exportedAt,

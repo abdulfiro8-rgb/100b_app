@@ -24,14 +24,20 @@ export class NativeSpeechDictation implements DictationSource {
 
   private listeners: PluginListenerHandle[] = [];
   private latest = "";
-  private available: boolean | undefined;
+  private available = false;
 
+  /**
+   * False until `probe()` has confirmed a recogniser exists.
+   *
+   * Deliberately pessimistic: defaulting to available would offer a Dictate
+   * button on a device that cannot dictate, which is the same failure as any
+   * other control that leads nowhere.
+   */
   isAvailable(): boolean {
-    // Synchronous by interface; the async probe result is cached by `probe()`.
-    return this.available !== false;
+    return this.available;
   }
 
-  /** Asks the platform whether a recogniser exists. Call once at start-up. */
+  /** Asks the platform whether a recogniser exists. Must run before `start`. */
   async probe(): Promise<boolean> {
     try {
       const { available } = await SpeechRecognition.available();
